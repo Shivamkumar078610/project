@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import re
-import random
 from moviepy import VideoFileClip
 
 app = Flask(__name__)
@@ -40,7 +39,7 @@ def analyze_text(data):
         feedback.append("❌ Description is too short.")
 
     # 3. Keyword/Tag Analysis (20 points)
-    power_words = ['how to', 'review', '2024', 'best', 'tutorial', 'easy', 'free']
+    power_words = ['how to', 'review', '2024', 'best', 'tutorial', 'easy', 'free', 'guide']
     tags_lower = tags.lower()
     found_power_words = [word for word in power_words if word in title.lower() or word in tags_lower]
     
@@ -93,7 +92,6 @@ def analyze_video_file(filepath):
             feedback.append("❌ Low resolution. This will hurt your click-through rate.")
 
         # 3. Aspect Ratio (10 points)
-        # 16:9 is standard for YouTube
         aspect_ratio = width / height
         if 1.7 <= aspect_ratio <= 1.8:
             score += 10
@@ -103,10 +101,8 @@ def analyze_video_file(filepath):
             feedback.append("⚠️ Unusual aspect ratio. Resize to 16:9 for best results.")
 
         # 4. Visual Engagement (Simulated AI) (30 points)
-        # In a real app, we would use Computer Vision here. 
-        # We will simulate it based on duration vs estimated cuts.
-        estimated_cuts = int(duration / 30) # Assume a cut every 30 seconds
-        score += min(estimated_cuts * 2, 30) # More cuts = more engaging
+        estimated_cuts = int(duration / 30)
+        score += min(estimated_cuts * 2, 30)
         feedback.append(f"🤖 AI Estimate: Detected ~{estimated_cuts} visual segments (Good pacing).")
         
         clip.close()
@@ -155,11 +151,10 @@ def analyze():
             }
             clip.close()
             
-            # Cleanup (optional)
+            # Cleanup
             os.remove(filepath)
     
     # Calculate Total Score
-    # If no video, text counts 100%. If video, split 50/50.
     if video_score > 0:
         total_score = (text_score + video_score) // 2
         all_feedback = text_feedback + ["--- VIDEO ANALYSIS ---"] + video_feedback
