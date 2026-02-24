@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Analyzer - Video Predictor</title>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --dark: #1a1a2e;
+            --card: #16213e;
+            --text: #eaeaea;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: -webkit-linear-gradient(var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .analyzer-box {
+            background-color: var(--card);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f3460;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* File Upload Styling */
+        .file-upload {
+            border: 2px dashed var(--secondary);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #1a3a6e;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        #videoPreview {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+        }
+
+        #resultArea {
+            margin-top: 30px;
+            display: none;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 10px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .feedback-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feedback-list li {
+            background: #0f3460;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .verdict {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .video-stats {
+            text-align: center;
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>SQL ANALYZER</h1>
+            <p>AI-Powered YouTube Video Predictor</p>
+        </header>
+
+        <div class="analyzer-box">
+            <!-- Text Analysis Section -->
+            <div class="input-group">
+                <label>Video Title</label>
+                <input type="text" id="title" placeholder="e.g., How to make money in 2024">
+            </div>
+            
+            <div class="input-group">
+                <label>Description</label>
+                <textarea id="description" rows="5" placeholder="Describe your video content here..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Tags (Comma separated)</label>
+                <input type="text" id="tags" placeholder="money, tutorial, finance">
+            </div>
+
+            <hr style="border-color: #333; margin: 30px 0;">
+
+            <!-- Video Analysis Section -->
+            <div class="input-group">
+                <label>Upload Video (Optional)</label>
+                <div class="file-upload">
+                    <label for="videoInput" class="upload-label">
+                        📂 Click to Upload Video File
+                    </label>
+                    <input type="file" id="videoInput" accept="video/*">
+                    <div id="videoPreview">No video selected</div>
+                </div>
+            </div>
+
+            <button onclick="analyzeVideo()">RUN FULL ANALYSIS</button>
+
+            <div id="resultArea">
+                <div id="videoStatsBox" class="video-stats" style="display:none;">
+                    Video Detected: <span id="vDuration"></span> | Resolution: <span id="vRes"></span>
+                </div>
+                <div class="score-circle" id="scoreDisplay">0%</div>
+                <div class="verdict" id="verdictDisplay">Waiting...</div>
+                <ul class="feedback-list" id="feedbackList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preview Video Name
+        document.getElementById('videoInput').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                document.getElementById('videoPreview').innerText = "Selected: " + e.target.files[0].name;
+            }
+        });
+
+        async function analyzeVideo() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const tags = document.getElementById('tags').value;
+            const videoFile = document.getElementById('videoInput').files[0];
+
+            if(!title && !videoFile) {
+                alert("Please enter a title or upload a video.");
+                return;
+            }
+
+            const btn = document.querySelector('button');
+            btn.innerText = "Analyzing...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('tags', tags);
+            if(videoFile) {
+                formData.append('video', videoFile);
+            }
+
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            // Update UI
+            document.getElementById('resultArea').style.display = 'block';
+            document.getElementById('scoreDisplay').innerText = data.score + '%';
+            document.getElementById('verdictDisplay').innerText = data.verdict;
+            
+            // Show video stats if exists
+            if(data.video_info) {
+                document.getElementById('videoStatsBox').style.display = 'block';
+                document.getElementById('vDuration').innerText = Math.floor(data.video_info.duration / 60) + "m " + (data.video_info.duration % 60) + "s";
+                document.getElementById('vRes').innerText = "p" + data.video_info.resolution;
+            }
+
+            const list = document.getElementById('feedbackList');
+            list.innerHTML = '';
+            data.feedback.forEach(item => {
+                let li = document.createElement('li');
+                li.innerText = item;
+                list.appendChild(li);
+            });
+
+            // Color change based on score
+            const circle = document.getElementById('scoreDisplay');
+            if(data.score < 50) circle.style.borderColor = '#ff4b4b';
+            else if(data.score < 80) circle.style.borderColor = '#ffa500';
+            else circle.style.borderColor = '#00ff00';
+
+            btn.innerText = "RUN FULL ANALYSIS";
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
